@@ -54,6 +54,7 @@ app.layout = html.Div(children=[html.H1('SpaceX Launch Records Dashboard',
                                     value=[min_payload, max_payload]),
                                 # TASK 4: Add a scatter chart to show the correlation between payload and launch success
                                 html.Div(dcc.Graph(id='success-payload-scatter-chart')),
+                                
                                 ])
 
 # TASK 2:
@@ -77,21 +78,24 @@ def get_pie_chart(entered_site):
 # TASK 4:
 # Add a callback function for `site-dropdown` and `payload-slider` as inputs, `success-payload-scatter-chart` as output
 @app.callback(Output(component_id='success-payload-scatter-chart', component_property='figure'),
-              Input(component_id='site-dropdown', component_property='value'),
-              Input(component_id='payload-slider', component_property='value')
+              [Input(component_id='site-dropdown',  component_property='value'),
+              Input(component_id='payload-slider', component_property='value')]
               )
 def get_pie_chart(entered_site,payload):
     filtered_df = spacex_df
     if entered_site == 'ALL':
-        fig = px.scatter(filtered_df, y='class', 
+        filtered_df2 = filtered_df[(filtered_df['Payload Mass (kg)']>=payload[0])
+        &(filtered_df['Payload Mass (kg)']<=payload[1])]
+        fig = px.scatter(filtered_df2, y='class', 
         x='Payload Mass (kg)', color = 'Booster Version Category',
         title='title')
         return fig
     else:
         # return the outcomes piechart for a selected site
         df = filtered_df[filtered_df['Launch Site']==entered_site]
-        #df = df[df['Payload Mass (kg)']<=payload],
-        fig = px.scatter(df, x='Payload Mass (kg)', 
+        df2 = df[(df['Payload Mass (kg)']>=payload[0])
+        &(df['Payload Mass (kg)']<=payload[1])]
+        fig = px.scatter(df2, x='Payload Mass (kg)', 
         y='class', color = 'Booster Version Category',
         title='title')
         return fig
@@ -99,4 +103,3 @@ def get_pie_chart(entered_site,payload):
 # Run the app
 if __name__ == '__main__':
     app.run_server()
-
